@@ -187,13 +187,42 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Max-Age: 86400');
 $unhostedJsonParser = new UnhostedJsonParser();
 $storageBackend = new StorageBackend();
-try {
+if(count($_POST) == 0) {//handle as HTTP GET request
+	$referer = "";
+	$req = $_GET['p'];
+	$parts = explode('/', $req);
+	$referer = array("host"=>array_shift($parts));
+	$chan = array_shift($parts);
+	$keyPath = implode('/', $parts);
+	$POST = array(
+			"protocol"=>"UJ/0.1",
+			"cmd"=>json_encode(
+				array(
+					"method"=>"GET",
+					"chan"=>$chan,
+					"keyPath"=>$keyPath,
+				)
+			),
+		);
+	//now process it:
+	try {
+		$res = $unhostedJsonParser->parseInput($storageBackend, $POST, $referer);
+		$resObj = json_decode($res, TRUE);
+		echo $resObj["cmd"]["value"];
+	} catch (Exception $e) {
+		echo "ERROR:\n" . $e->getMessage() . "\n";
+	}
+} else {//handle as UJ/0.1 over HTTP POST
 	if(!isset($_SERVER['HTTP_REFERER'])) {
 		die("This url is an unhosted JSON storage, and only works over CORS-AJAX. Please access using the unhosted JS library (www.unhosted.org).");
 	}
 	$referer = parse_url($_SERVER['HTTP_REFERER']);
-	$res = $unhostedJsonParser->parseInput($storageBackend, $_POST, $referer);
-	echo $res;
-} catch (Exception $e) {
-	echo "ERROR:\n" . $e->getMessage() . "\n";
+	$POST = $_POST;
+	//now process it:
+	try {
+		$res = $unhostedJsonParser->parseInput($storageBackend, $POST, $referer);
+		echo $res;
+	} catch (Exception $e) {
+		echo "ERROR:\n" . $e->getMessage() . "\n";
+	}
 }
