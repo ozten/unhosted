@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule (.*) unhosted.php?p=$1 [L,QSA]
