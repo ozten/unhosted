@@ -191,19 +191,40 @@ if(count($_POST) == 0) {//handle as HTTP GET request
 	$referer = "";
 	$req = $_GET['p'];
 	$parts = explode('/', $req);
+	$interface = array_shift($parts);
 	$referer = array("host"=>array_shift($parts));
 	$chan = array_shift($parts);
 	$keyPath = implode('/', $parts);
-	$POST = array(
-			"protocol"=>"UJ/0.1",
-			"cmd"=>json_encode(
-				array(
-					"method"=>"GET",
-					"chan"=>$chan,
-					"keyPath"=>$keyPath,
-				)
-			),
-		);
+	switch($interface) {
+	case "GET":
+		$POST = array(
+				"protocol"=>"UJ/0.1",
+				"cmd"=>json_encode(
+					array(
+						"method"=>"GET",
+						"chan"=>$chan,
+						"keyPath"=>$keyPath,
+					)
+				),
+			);
+		break;
+	case "PuSH":
+		//this is the URL that plays Hub. it will receive:
+		//	- subscribe requests for outgoing content, interpret as SUBSCRIBE/UNSUBSCRIBE commands
+		//	- pings for incoming content, interpret as SEND commands
+		//also within unhosted, it is valid to use this GET syntax instead of using the POST one.
+		$POST = array(
+				"protocol"=>"UJ/0.1",
+				"cmd"=>json_encode(
+					array(
+						"method"=>"SUBSCRIBE",
+TODO!!!						"chan"=>$chan,
+						"keyPath"=>$keyPath,
+					)
+				),
+			);
+		break;
+	}	
 	//now process it:
 	try {
 		$res = $unhostedJsonParser->parseInput($storageBackend, $POST, $referer);
