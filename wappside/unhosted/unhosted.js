@@ -107,7 +107,7 @@ unhosted = new function() {
 		}
 		xmlhttp=new XMLHttpRequest();
 		//xmlhttp.open("POST","http://example.unhosted.org/",false);
-		xmlhttp.open("POST","http://"+cloud+"/unhosted/cloudside/unhosted.php",false);
+		xmlhttp.open("POST","http://"+cloud+"/unhosted/cloudside/php/unhosted.php",false);
 		xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 		xmlhttp.send(post);
 		return xmlhttp.responseText;
